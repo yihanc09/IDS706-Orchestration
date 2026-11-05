@@ -7,6 +7,7 @@ import { SetupPage } from './pages/SetupPage'
 import { SimpleLoopPage } from './pages/SimpleLoopPage'
 import { StudentLoopPage } from './pages/StudentLoopPage'
 import { AiJobsLoopPage } from './pages/AiJobsLoopPage'
+import { SalaryBudgetPage } from './pages/SalaryBudgetPage'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/guide" element={<GuidePage />} />
         <Route path="/student-loop" element={<StudentLoopPage />} />
         <Route path="/ai-jobs-loop" element={<AiJobsLoopPage />} />
+        <Route path="/salary-budget" element={<SalaryBudgetPage />} />
         <Route path="/simple-loop" element={<SimpleLoopPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
