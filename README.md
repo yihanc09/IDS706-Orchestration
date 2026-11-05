@@ -1,6 +1,6 @@
 # AI Jobs Pipeline — Week 11 Mini-Assignment
 
-This repository began as the class AutoML Research Lab. For Part 1 of my Week 11 assignment, I added an Airflow pipeline for the AI jobs dataset from my earlier project. The class fraud example is still in the repository, but the new DAG uses only the AI jobs data. Part 2, the agent-based modeling workflow, is next.
+This repository began as the class AutoML Research Lab. For Part 1 of my Week 11 assignment, I added an Airflow pipeline for the AI jobs dataset from my earlier project. The class fraud example is still in the repository, but the new DAG uses only the AI jobs data. Part 2 uses the output of that DAG to train and compare salary models.
 
 ## What the pipeline does
 
@@ -28,6 +28,16 @@ I ran the DAG twice on November 5, 2026. Both runs succeeded. The database still
 ![Mean annual salary by job category](docs/images/ai_jobs_salary_by_category.png)
 
 Airflow evidence: [successful Grid run](docs/images/ai_jobs_airflow_grid.jpg) · [DAG Graph](docs/images/ai_jobs_airflow_graph.jpg).
+
+## Part 2: agent-based salary modeling
+
+I adapted the class LangGraph loop for a regression problem in [`ai_jobs_loop/graph.py`](ai_jobs_loop/graph.py). The Data Auditor checks the CSV exported by Part 1. The Experiment Planner chooses a regressor, the Model Trainer measures validation error, and the Evaluation Judge either requests another trial or sends the best model to the Holdout Reporter. The live graph and metrics are at `/ai-jobs-loop`; the original classroom build loop remains available at `/student-loop`.
+
+Run Part 1 first so `datasets/ai_jobs/ai_jobs_clean_latest.csv` exists. Then start the web app with `make start-mac` (or `make start-windows` from Git Bash) and open <http://127.0.0.1:5173/ai-jobs-loop>. Click **Run agent loop**. No API key is needed: the planner tries untested models in a repeatable order. If you want the planner to choose among the remaining models with OpenRouter, set `AI_JOBS_USE_LLM=true` and `OPENROUTER_API_KEY` in `.env`, then restart the gateway.
+
+I used a fixed 60% training / 20% validation / 20% holdout split with seed 42. Only validation MAE selects the model; the holdout is used once at the end. With three trials, Ridge had the lowest validation MAE ($49,575.28). Its holdout MAE was $52,281.79 and holdout R² was 0.0695, compared with $53,456.47 MAE for a mean-prediction baseline. The improvement is small, and the low R² means these features explain little of the salary variation in this dataset.
+
+Evidence: [live agent graph](docs/images/ai_jobs_agent_graph.jpg) · [model evaluation results](docs/images/ai_jobs_model_results.jpg).
 
 ## Original class demo
 
@@ -77,6 +87,7 @@ Edit `.env` as needed:
 | --- | --- | --- |
 | `OPENROUTER_API_KEY` | Simple loop LLM agents | Recommended (without it, nodes use fallbacks) |
 | `OPENROUTER_MODEL` | Simple loop | Optional (default: `nvidia/nemotron-3.5-lightning:free`) |
+| `AI_JOBS_USE_LLM` | AI jobs experiment planner | Optional (default: `false`) |
 | `AIRFLOW_ADMIN_USER` / `AIRFLOW_ADMIN_PASSWORD` | Airflow UI | Optional (default: `admin` / `admin`) |
 | `CURSOR_API_KEY` | Simple/student loop when Model = Cursor SDK; also full multi-agent stack | Optional |
 | `WANDB_*` | Full multi-agent stack only | Optional |
