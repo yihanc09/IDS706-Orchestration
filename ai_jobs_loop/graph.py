@@ -26,7 +26,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 TARGET = "annual_salary_usd"
-NUMERIC = ["years_of_experience", "demand_score", "is_llm_role", "skill_count", "has_python"]
+NUMERIC = ["years_of_experience", "demand_score", "is_llm_role", "skill_count", "has_python", "gdp_per_capita_usd"]
 CATEGORICAL = ["job_category", "remote_work"]
 FEATURES = NUMERIC + CATEGORICAL
 FAMILIES = ("ridge", "random_forest", "extra_trees")

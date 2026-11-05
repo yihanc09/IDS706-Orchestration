@@ -25,6 +25,7 @@ class SalaryLoopTest(unittest.TestCase):
                 "is_llm_role": index % 2,
                 "skill_count": 3 + index % 6,
                 "has_python": index % 3 == 0,
+                "gdp_per_capita_usd": 50000 + index % 4 * 1000,
                 "job_category": "Engineering" if index % 2 else "Research",
                 "remote_work": "Remote" if index % 3 else "On-site",
             })
@@ -55,6 +56,7 @@ class SalaryLoopTest(unittest.TestCase):
                 "is_llm_role": index % 2,
                 "skill_count": 3 + index % 6,
                 "has_python": index % 3 == 0,
+                "gdp_per_capita_usd": 50000 + index % 4 * 1000,
                 "job_category": "Engineering" if index % 2 else "Research",
                 "remote_work": "Remote" if index % 3 else "On-site",
             })
