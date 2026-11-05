@@ -72,6 +72,7 @@ services:
       MINI_LOOP_ROOT: /mini_loop
       STUDENT_LOOP_ROOT: /student_loop
       AI_JOBS_LOOP_ROOT: /ai_jobs_loop
+      SALARY_BUDGET_ROOT: /salary_budget_agents
       AI_JOBS_CLEAN_DATASET: /bundled/ai_jobs/ai_jobs_clean_latest.csv
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL:-nvidia/nemotron-3.5-lightning:free}
@@ -83,6 +84,8 @@ services:
       - ../mini_loop:/mini_loop
       - ../student_loop:/student_loop
       - ../ai_jobs_loop:/ai_jobs_loop
+      - ../salary_budget_agents:/salary_budget_agents
+      - ../artifacts/salary_budget:/artifacts/salary_budget
       # Shared LLM/train helpers imported by both graphs (not a student paste target)
       - ../loop_runtime.py:/app/loop_runtime.py
       - ../mocks/recordings:/app/mocks/recordings:ro

@@ -1148,6 +1148,60 @@ def ai_jobs_loop_stream(
     )
 
 
+# --- Adaptive salary budget agents (Week 11 bonus) ---
+
+
+def _import_salary_budget():
+    package = Path(os.getenv("SALARY_BUDGET_ROOT", str(ROOT / "salary_budget_agents")))
+    if not (package / "graph.py").is_file():
+        raise HTTPException(status_code=503, detail="Salary budget graph is not mounted")
+    if str(package.parent) not in sys.path:
+        sys.path.insert(0, str(package.parent))
+    return importlib.import_module("salary_budget_agents.graph")
+
+
+@app.get("/salary-budget/status")
+def salary_budget_status() -> dict:
+    return _import_salary_budget().status(AI_JOBS_CLEAN_DATASET)
+
+
+@app.get("/salary-budget/stream")
+def salary_budget_stream(
+    max_trials: int = Query(default=3, ge=1, le=3),
+    target_gain: float = Query(default=0.20, ge=0, le=1),
+    simulate_failure: bool = Query(default=False),
+    job_category: str = Query(default="AI Engineering"),
+    years_of_experience: float = Query(default=5, ge=0, le=40),
+    remote_work: str = Query(default="Fully Remote"),
+    country_iso3: str = Query(default="USA"),
+    is_llm_role: bool = Query(default=True),
+    has_python: bool = Query(default=True),
+) -> StreamingResponse:
+    graph = _import_salary_budget()
+    readiness = graph.status(AI_JOBS_CLEAN_DATASET)
+    if not readiness["ready"]:
+        raise HTTPException(status_code=400, detail=readiness["error"])
+
+    def events():
+        try:
+            role_request = {"job_category": job_category, "years_of_experience": years_of_experience, "remote_work": remote_work, "country_iso3": country_iso3, "is_llm_role": is_llm_role, "has_python": has_python}
+            for event in graph.stream_workflow(AI_JOBS_CLEAN_DATASET, max_trials=max_trials, target_gain=target_gain, simulate_failure=simulate_failure, role_request=role_request):
+                yield f"event: {event['type']}\n"
+                yield f"data: {json.dumps(event)}\n\n"
+        except Exception as exc:  # noqa: BLE001
+            yield "event: error\n"
+            yield f"data: {json.dumps({'type': 'error', 'message': str(exc)})}\n\n"
+
+    return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.get("/salary-budget/evaluation")
+def salary_budget_evaluation() -> dict:
+    _import_salary_budget()
+    suite = importlib.import_module("salary_budget_agents.evaluate")
+    return suite.evaluate(AI_JOBS_CLEAN_DATASET, output_path=None)
+
+
 # --- Student research loop (classroom skeleton; empty until wired) ---
 
 
