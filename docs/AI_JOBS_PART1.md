@@ -2,7 +2,7 @@
 
 ## Data and transformations
 
-The first source is `datasets/ai_jobs/ai_jobs_market_2025_2026.csv` (1,500 AI job postings from my earlier AI Jobs project). Its original external provenance was not supplied. The second, independent source is a 2024 snapshot of the World Bank's [GDP per capita (current US$) indicator](https://data.worldbank.org/indicator/NY.GDP.PCAP.CD), stored at `datasets/ai_jobs/world_bank_gdp_per_capita_2024.csv`. I downloaded the observations for the 13 countries named in the jobs file from the [World Bank API](https://api.worldbank.org/v2/country/US;GB;SG;IN;JP;CN;CA;AE;NL;FR;AU;DE;CH/indicator/NY.GDP.PCAP.CD?date=2024&format=json&per_page=100) and committed the snapshot so runs are reproducible. Docker mounts both files at `/repo/datasets/ai_jobs/`.
+The first source is the [AI Jobs Market 2025–2026 Kaggle dataset](https://www.kaggle.com/datasets/alitaqishah/ai-jobs-market-2025-2026-salaries), which I used in my earlier AI Jobs project. Its 1,500 job postings are stored at `datasets/ai_jobs/ai_jobs_market_2025_2026.csv`. The second, independent source is a 2024 snapshot of the World Bank's [GDP per capita (current US$) indicator](https://data.worldbank.org/indicator/NY.GDP.PCAP.CD), stored at `datasets/ai_jobs/world_bank_gdp_per_capita_2024.csv`. I downloaded the observations for the 13 countries named in the jobs file from the [World Bank API](https://api.worldbank.org/v2/country/US;GB;SG;IN;JP;CN;CA;AE;NL;FR;AU;DE;CH/indicator/NY.GDP.PCAP.CD?date=2024&format=json&per_page=100) and committed the snapshot so runs are reproducible. Docker mounts both files at `/repo/datasets/ai_jobs/`.
 
 Airflow creates three cleaned tables from the two sources:
 
