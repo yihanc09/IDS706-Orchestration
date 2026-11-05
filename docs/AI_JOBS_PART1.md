@@ -39,7 +39,7 @@ docker compose -f infra/docker-compose.yml --env-file .env --profile airflow exe
 docker compose -f infra/docker-compose.yml --env-file .env --profile airflow exec airflow-scheduler airflow dags list-runs -d ai_jobs_salary_pipeline
 ```
 
-Airflow UI: <http://localhost:8088>. Open the DAG and its Graph and Grid tabs. The [Grid screenshot](images/ai_jobs_airflow_grid.jpg) shows two successful runs and all six tasks in green; the [Graph screenshot](images/ai_jobs_airflow_graph.jpg) shows the task dependencies. The default login is `admin` / `admin`, unless changed in `.env`.
+Airflow UI: <http://localhost:8088>. Open the DAG and its Graph and Grid tabs. The [Grid screenshot](images/ai_jobs_airflow_grid.png) shows two successful runs and all six tasks in green; the [Graph screenshot](images/ai_jobs_airflow_graph.png) shows the task dependencies. The default login is `admin` / `admin`, unless changed in `.env`.
 
 Check the database and report:
 

@@ -27,7 +27,7 @@ I ran the DAG twice on November 5, 2026. Both runs succeeded. The database still
 
 ![Mean annual salary by job category](docs/images/ai_jobs_salary_by_category.png)
 
-Airflow evidence: [successful Grid run](docs/images/ai_jobs_airflow_grid.jpg) · [DAG Graph](docs/images/ai_jobs_airflow_graph.jpg).
+Airflow evidence: [successful Grid run](docs/images/ai_jobs_airflow_grid.png) · [DAG Graph](docs/images/ai_jobs_airflow_graph.png).
 
 ## Part 2: agent-based salary modeling
 
@@ -37,7 +37,7 @@ Run Part 1 first so `datasets/ai_jobs/ai_jobs_clean_latest.csv` exists. Then sta
 
 I used a fixed 60% training / 20% validation / 20% holdout split with seed 42. Only validation MAE selects the model; the holdout is used once at the end. With three trials, Ridge had the lowest validation MAE ($49,575.28). Its holdout MAE was $52,281.79 and holdout R² was 0.0695, compared with $53,456.47 MAE for a mean-prediction baseline. The improvement is small, and the low R² means these features explain little of the salary variation in this dataset.
 
-Evidence: [live agent graph](docs/images/ai_jobs_agent_graph.jpg) · [model evaluation results](docs/images/ai_jobs_model_results.jpg).
+Evidence: [live agent graph](docs/images/ai_jobs_agent_graph.png) · [model evaluation results](docs/images/ai_jobs_model_results.png).
 
 ## Original class demo
 
