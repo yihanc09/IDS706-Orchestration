@@ -96,7 +96,7 @@ export function AiJobsLoopPage() {
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-teal">Week 11 · Part 2</p>
             <h1 className="font-display text-4xl font-semibold">AI Jobs Salary Loop</h1>
-            <p className="mt-2 max-w-3xl text-sm text-mist">LangGraph agents train and compare regressors on the table produced by Airflow. Lower mean absolute error (MAE) is better.</p>
+            <p className="mt-2 max-w-3xl text-sm text-mist">LangGraph agents train and compare salary regressors on Airflow's joined jobs and World Bank country data. Lower mean absolute error (MAE) is better.</p>
           </div>
           <Link to="/student-loop" className="text-sm text-teal hover:underline">Classroom build loop ↗</Link>
         </div>

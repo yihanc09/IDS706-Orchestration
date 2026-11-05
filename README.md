@@ -1,10 +1,10 @@
 # AI Jobs Pipeline — Week 11 Mini-Assignment
 
-This repository began as the class AutoML Research Lab. For Part 1 of my Week 11 assignment, I added an Airflow pipeline for the AI jobs dataset from my earlier project. The class fraud example is still in the repository, but the new DAG uses only the AI jobs data. Part 2 uses the output of that DAG to train and compare salary models.
+This repository began as the class AutoML Research Lab. For Part 1 of my Week 11 assignment, I added an Airflow pipeline that combines AI job postings from my earlier project with country data from the World Bank. The class fraud example is still in the repository. Part 2 uses the output of the new DAG to train and compare salary models.
 
 ## What the pipeline does
 
-The source is [`ai_jobs_market_2025_2026.csv`](datasets/ai_jobs/ai_jobs_market_2025_2026.csv), with 1,500 job postings. I treat each posting and its pipe-separated skills as two related tables. Airflow cleans the jobs and skills in parallel, joins skill counts and a Python-skill flag back to the jobs, and loads all three tables into the `ai_jobs` schema in PostgreSQL. The final task reads the joined table from PostgreSQL to make the salary chart below. It also exports `datasets/ai_jobs/ai_jobs_clean_latest.csv` for Part 2.
+The two independent sources are [`ai_jobs_market_2025_2026.csv`](datasets/ai_jobs/ai_jobs_market_2025_2026.csv), with 1,500 postings from my earlier project, and a [World Bank GDP per capita](https://data.worldbank.org/indicator/NY.GDP.PCAP.CD) snapshot for 2024, saved as [`world_bank_gdp_per_capita_2024.csv`](datasets/ai_jobs/world_bank_gdp_per_capita_2024.csv). Airflow also splits the postings' skill lists into a job-skill table. It cleans jobs, skills, and country data in parallel, then joins skill counts and GDP per capita by country. The four resulting tables are loaded into PostgreSQL. The final task reads the joined table back from PostgreSQL to make the salary chart and exports `datasets/ai_jobs/ai_jobs_clean_latest.csv` for Part 2. Global postings have no country match and keep a null GDP value.
 
 The DAG, `ai_jobs_salary_pipeline`, is scheduled for Mondays at 09:00 UTC. It uses Airflow's `LocalExecutor`, and only one DAG run can load the tables at a time. See [the Part 1 notes](docs/AI_JOBS_PART1.md) for the cleaning rules and task graph.
 
@@ -23,7 +23,7 @@ Airflow is at <http://localhost:8088>. The default login is `admin` / `admin`, u
 
 ## What I found
 
-I ran the DAG twice on November 5, 2026. Both runs succeeded. The database still had 1,500 jobs, 9,428 distinct job-skill pairs, and 1,500 joined rows after the second run, so the load did not duplicate data. Across the supplied postings, mean annual salary was $194,892. Architecture had the highest category mean at $251,576.92. This is a descriptive comparison of the supplied records, not an estimate of what a job category causes someone to earn.
+I ran the revised DAG twice successfully on November 5, 2026, after two successful runs of the earlier version. After the second revised run, PostgreSQL contained 1,500 jobs, 9,428 distinct job-skill pairs, 13 country observations, and 1,500 joined rows, with no duplicates from the rerun. Country data matched 1,418 postings; the other 82 were labeled Global. Across the postings, mean annual salary was $194,892. Architecture had the highest category mean at $251,576.92. This is a descriptive comparison of the supplied records, not an estimate of what a job category causes someone to earn.
 
 ![Mean annual salary by job category](docs/images/ai_jobs_salary_by_category.png)
 
@@ -35,7 +35,7 @@ I built a separate LangGraph workflow for salary regression in [`ai_jobs_loop/gr
 
 Run Part 1 first so `datasets/ai_jobs/ai_jobs_clean_latest.csv` exists. Then start the web app with `make start-mac` (or `make start-windows` from Git Bash) and open <http://127.0.0.1:5173/ai-jobs-loop>. Click **Run agent loop**. No API key is needed. The planner starts with Ridge, then compares its validation MAE with a mean-prediction baseline. An improvement below 10% sends the next trial to Random Forest; otherwise it tries Extra Trees. The judge stops when the target MAE is met or the trial budget is used. The page shows each decision in Agent activity. To let OpenRouter choose among untried models instead, set `AI_JOBS_USE_LLM=true` and `OPENROUTER_API_KEY` in `.env`, then restart the gateway.
 
-I used a fixed 60% training / 20% validation / 20% holdout split with seed 42. Only validation MAE selects the model; the holdout is used once at the end. With three trials, Ridge had the lowest validation MAE ($49,575.28). Its holdout MAE was $52,281.79 and holdout R² was 0.0695, compared with $53,456.47 MAE for a mean-prediction baseline. The improvement is small, and the low R² means these features explain little of the salary variation in this dataset.
+The model uses the joined GDP per capita value alongside job fields; IDs and salary-derived fields are excluded. I used a fixed 60% training / 20% validation / 20% holdout split with seed 42. Only validation MAE selects the model; the holdout is used once at the end. With three trials, Ridge had the lowest validation MAE ($44,479.50). Its holdout MAE was $43,857.32 and holdout R² was 0.2681, compared with $53,456.47 MAE for a mean-prediction baseline. The improvement is useful for prediction on this split, although the modest R² leaves substantial salary variation unexplained.
 
 Evidence: [live agent graph](docs/images/ai_jobs_agent_graph.png) · [model evaluation results](docs/images/ai_jobs_model_results.png).
 
