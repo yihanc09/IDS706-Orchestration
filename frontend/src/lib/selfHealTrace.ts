@@ -75,7 +75,7 @@ export function buildSelfHealTraces(
       if (key === 'status' && terminal && value === 'running') continue
       // Keep earliest start timestamp.
       if (key === 'startedAt' && a.startedAt) continue
-      ;(a as Record<string, unknown>)[key] = value
+      ;(a as unknown as Record<string, unknown>)[key] = value
     }
     row.used = Math.max(row.used, attempt, row.attempts.length)
   }

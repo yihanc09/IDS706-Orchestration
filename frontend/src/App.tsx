@@ -6,6 +6,7 @@ import { ProjectsPage } from './pages/ProjectsPage'
 import { SetupPage } from './pages/SetupPage'
 import { SimpleLoopPage } from './pages/SimpleLoopPage'
 import { StudentLoopPage } from './pages/StudentLoopPage'
+import { AiJobsLoopPage } from './pages/AiJobsLoopPage'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/session/:sessionId" element={<ControlCenterPage />} />
         <Route path="/guide" element={<GuidePage />} />
         <Route path="/student-loop" element={<StudentLoopPage />} />
+        <Route path="/ai-jobs-loop" element={<AiJobsLoopPage />} />
         <Route path="/simple-loop" element={<SimpleLoopPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

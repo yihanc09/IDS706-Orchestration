@@ -71,14 +71,18 @@ services:
       SIMPLE_LOOP_RUNS_PATH: /data/simple_loop/runs.json
       MINI_LOOP_ROOT: /mini_loop
       STUDENT_LOOP_ROOT: /student_loop
+      AI_JOBS_LOOP_ROOT: /ai_jobs_loop
+      AI_JOBS_CLEAN_DATASET: /bundled/ai_jobs/ai_jobs_clean_latest.csv
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL:-nvidia/nemotron-3.5-lightning:free}
+      AI_JOBS_USE_LLM: ${AI_JOBS_USE_LLM:-false}
       CURSOR_API_KEY: ${CURSOR_API_KEY:-}
     volumes:
       # rw so uploaded CSVs can be reused via the prior-datasets dropdown
       - ../datasets:/bundled
       - ../mini_loop:/mini_loop
       - ../student_loop:/student_loop
+      - ../ai_jobs_loop:/ai_jobs_loop
       # Shared LLM/train helpers imported by both graphs (not a student paste target)
       - ../loop_runtime.py:/app/loop_runtime.py
       - ../mocks/recordings:/app/mocks/recordings:ro

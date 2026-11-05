@@ -35,7 +35,6 @@ function edgeStyle(kind: string, animated: boolean): Partial<Edge> {
   return {
     // Orthogonal only — axis-aligned nodes → straight segments; L for revise.
     type: 'step',
-    pathOptions: { offset: 0, borderRadius: 0 },
     animated,
     markerEnd: {
       type: MarkerType.ArrowClosed,

@@ -655,6 +655,11 @@ STUDENT_LOOP_ROOT = Path(os.getenv("STUDENT_LOOP_ROOT", str(ROOT / "student_loop
 if not STUDENT_LOOP_ROOT.exists():
     STUDENT_LOOP_ROOT = Path("/student_loop")
 
+AI_JOBS_LOOP_ROOT = Path(os.getenv("AI_JOBS_LOOP_ROOT", str(ROOT / "ai_jobs_loop")))
+AI_JOBS_CLEAN_DATASET = Path(
+    os.getenv("AI_JOBS_CLEAN_DATASET", str(ROOT / "datasets/ai_jobs/ai_jobs_clean_latest.csv"))
+)
+
 
 DEFAULT_OPENROUTER_MODEL = os.getenv(
     "OPENROUTER_MODEL",
@@ -1093,6 +1098,53 @@ async def simple_loop_stream(
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no",
         },
+    )
+
+
+# --- AI jobs salary loop (Week 11 assignment) ---
+
+
+def _import_ai_jobs_loop():
+    if not (AI_JOBS_LOOP_ROOT / "graph.py").is_file():
+        raise HTTPException(status_code=503, detail="AI jobs graph is not mounted")
+    package_root = str(AI_JOBS_LOOP_ROOT.parent)
+    if package_root not in sys.path:
+        sys.path.insert(0, package_root)
+    return importlib.import_module("ai_jobs_loop.graph")
+
+
+@app.get("/ai-jobs-loop/status")
+def ai_jobs_loop_status() -> dict:
+    graph = _import_ai_jobs_loop()
+    return graph.status(AI_JOBS_CLEAN_DATASET)
+
+
+@app.get("/ai-jobs-loop/stream")
+def ai_jobs_loop_stream(
+    max_cycles: int = Query(default=3, ge=1, le=3),
+    target_mae: float = Query(default=30000, gt=0),
+) -> StreamingResponse:
+    """Stream the salary-model graph against the fixed Airflow handoff CSV."""
+    graph = _import_ai_jobs_loop()
+    readiness = graph.status(AI_JOBS_CLEAN_DATASET)
+    if not readiness["ready"]:
+        raise HTTPException(status_code=400, detail=readiness["error"])
+
+    def events():
+        try:
+            for event in graph.stream_loop(
+                AI_JOBS_CLEAN_DATASET, max_cycles=max_cycles, target_mae=target_mae
+            ):
+                yield f"event: {event['type']}\n"
+                yield f"data: {json.dumps(event)}\n\n"
+        except Exception as exc:  # noqa: BLE001
+            yield "event: error\n"
+            yield f"data: {json.dumps({'type': 'error', 'message': str(exc)})}\n\n"
+
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 

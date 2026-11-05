@@ -21,6 +21,7 @@ export function SessionReportModal({
   if (!open || !report) return null
 
   const md = reportToMarkdown(report)
+  const reportSessionId = report.sessionId
 
   async function copyMarkdown() {
     try {
@@ -37,7 +38,7 @@ export function SessionReportModal({
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `session-report-${report.sessionId}.md`
+    a.download = `session-report-${reportSessionId}.md`
     a.click()
     URL.revokeObjectURL(url)
   }
