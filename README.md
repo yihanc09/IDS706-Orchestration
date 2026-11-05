@@ -1,4 +1,37 @@
-# AutoML Research Lab: Student Setup
+# AI Jobs Pipeline — Week 11 Mini-Assignment
+
+This repository began as the class AutoML Research Lab. For Part 1 of my Week 11 assignment, I added an Airflow pipeline for the AI jobs dataset from my earlier project. The class fraud example is still in the repository, but the new DAG uses only the AI jobs data. Part 2, the agent-based modeling workflow, is next.
+
+## What the pipeline does
+
+The source is [`ai_jobs_market_2025_2026.csv`](datasets/ai_jobs/ai_jobs_market_2025_2026.csv), with 1,500 job postings. I treat each posting and its pipe-separated skills as two related tables. Airflow cleans the jobs and skills in parallel, joins skill counts and a Python-skill flag back to the jobs, and loads all three tables into the `ai_jobs` schema in PostgreSQL. The final task reads the joined table from PostgreSQL to make the salary chart below. It also exports `datasets/ai_jobs/ai_jobs_clean_latest.csv` for Part 2.
+
+The DAG, `ai_jobs_salary_pipeline`, is scheduled for Mondays at 09:00 UTC. It uses Airflow's `LocalExecutor`, and only one DAG run can load the tables at a time. See [the Part 1 notes](docs/AI_JOBS_PART1.md) for the cleaning rules and task graph.
+
+## Run Part 1
+
+Start Docker Desktop, create `.env` from `.env.example` if needed, then run these commands from the repository root:
+
+```bash
+docker compose -f infra/docker-compose.yml --env-file .env --profile airflow up --build -d airflow-db airflow-init airflow-scheduler airflow-webserver
+docker compose -f infra/docker-compose.yml --env-file .env --profile airflow exec airflow-scheduler airflow dags unpause ai_jobs_salary_pipeline
+docker compose -f infra/docker-compose.yml --env-file .env --profile airflow exec airflow-scheduler airflow dags trigger ai_jobs_salary_pipeline
+docker compose -f infra/docker-compose.yml --env-file .env --profile airflow exec airflow-scheduler airflow dags list-runs -d ai_jobs_salary_pipeline
+```
+
+Airflow is at <http://localhost:8088>. The default login is `admin` / `admin`, unless `.env` overrides it. The per-run chart, CSV summaries, and JSON report are written under `artifacts/airflow/ai_jobs/`.
+
+## What I found
+
+I ran the DAG twice on November 5, 2026. Both runs succeeded. The database still had 1,500 jobs, 9,428 distinct job-skill pairs, and 1,500 joined rows after the second run, so the load did not duplicate data. Across the supplied postings, mean annual salary was $194,892. Architecture had the highest category mean at $251,576.92. This is a descriptive comparison of the supplied records, not an estimate of what a job category causes someone to earn.
+
+![Mean annual salary by job category](docs/images/ai_jobs_salary_by_category.png)
+
+Airflow evidence: [successful Grid run](docs/images/ai_jobs_airflow_grid.jpg) · [DAG Graph](docs/images/ai_jobs_airflow_graph.jpg).
+
+## Original class demo
+
+The setup notes below describe the instructor's fraud-data and simple-loop examples. They are kept here as reference for Part 2.
 
 Classroom demo in two parts:
 

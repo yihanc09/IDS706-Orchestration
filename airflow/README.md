@@ -1,5 +1,7 @@
 # Airflow (Docker-only) → simple research loop
 
+For the Week 11 AI Jobs assignment DAG, use [Part 1 instructions](../docs/AI_JOBS_PART1.md). The material below documents the original classroom fraud example.
+
 Classroom sequence:
 
 1. **Student DAG lab** — edit [`dags/student_baseline_prep.py`](dags/student_baseline_prep.py): fill task bodies, then wire deps. Graph tab stays **empty until wired**.
