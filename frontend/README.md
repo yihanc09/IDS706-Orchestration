@@ -1,20 +1,24 @@
-# AutoML Research Lab — frontend
+# Frontend
 
-React + TypeScript + Vite + Tailwind + Recharts.
+This React, TypeScript, and Vite app displays the live workflows. The browser sends API requests through Vite's /api proxy to the local gateway on port 8000.
 
-The browser talks to the **gateway only** via the Vite proxy (`/api` → `http://127.0.0.1:8000`).
+## Assignment pages
 
-## Stage B2
+- /ai-jobs-loop shows the Part 2 salary regression graph, validation trials, and holdout metrics.
+- /salary-budget shows the Part 3 adaptive graph, role budget brief, simulated trainer failure route, and evaluation suite.
 
-- Setup screen
-- Research Control Center (timeline, score chart, best vs previous, budget, activity log, health strip, mock banner)
-- Live React Flow agent graph (leads + subagents, SSE status, planned amber parallel nodes, side panel)
+The earlier classroom pages remain available as references. The assignment pages use their own backend graphs and the cleaned AI jobs output from the Airflow DAG.
 
-```bash
-# Terminal 1 — gateway / stack
-make up
+## Run locally
 
-# Terminal 2 — UI
-cd frontend && npm install && npm run dev
-# open http://127.0.0.1:5173
-```
+Run the Airflow DAG first to create datasets/ai_jobs/ai_jobs_clean_latest.csv. From the repository root, copy .env.example to .env, then start the service stack and Vite with make start-mac (or make start-windows in Git Bash). Open http://127.0.0.1:5173.
+
+For a frontend-only build check:
+
+~~~bash
+cd frontend
+npm install
+npm run build
+~~~
+
+See the [project README](../README.md) for the complete pipeline, agent workflows, results, and screenshots.

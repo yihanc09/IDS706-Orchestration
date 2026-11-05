@@ -30,7 +30,15 @@ START -> Data Steward -> Strategy Planner -> Model Trainer
 
 The model uses only `years_of_experience`, `demand_score`, `is_llm_role`, `skill_count`, `has_python`, `job_category`, `remote_work`, and optionally `gdp_per_capita_usd`. IDs and salary-derived columns are excluded. The role form supplies category, experience, work arrangement, country, and LLM/Python requirements. Demand score and skill count are filled from development-set medians; GDP comes from the selected country's 2024 observation. All candidates share a fixed seed and a 60% training / 20% validation / 20% holdout split. The 20% holdout is not used for choosing a model. The default validation goal is a 20% MAE improvement over the category-mean comparator, with at most three trials. The failure toggle in the Dashboard injects one transient error for demonstration; no external service is required.
 
-![Adaptive agent graph after a recovered training failure](images/salary_budget_graph.png)
+The normal run visits the data, planning, training, review, and reporting agents. Recovery stays idle unless training fails.
+
+![Normal adaptive graph with Recovery Agent waiting](images/salary_budget_graph.png)
+
+I also enabled **Simulate one trainer failure** in the dashboard. That run visited Recovery Agent, retried Model Trainer once, and still completed the brief. The screenshots show the actual route and the retry in the decision trace.
+
+![Adaptive graph after the injected trainer failure](images/salary_budget_recovery_graph.png)
+
+![Decision trace showing the trainer retry and completed report](images/salary_budget_recovery_trace.png)
 
 ## Run locally
 
@@ -56,6 +64,8 @@ Each case is scored as the fraction of its checks that pass. Every case has a pa
 | Trial budget exhausted | Two trials; unattainable 99% validation gain target | Stop after two trials with budget reason, then evaluate holdout once | Three checks, one-third each |
 
 Local result: **5/5 passed**. The suite measures intermediate quality (input checks, feature selection, measured validation winner), final quality (holdout MAE relative to baseline), and coordination (routes, retries, trial budget, holdout discipline).
+
+![Default role brief and validation trials](images/salary_budget_brief.png)
 
 ![Evaluation cases and baseline comparison in the Dashboard](images/salary_budget_evaluation.png)
 
