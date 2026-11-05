@@ -60,8 +60,8 @@ Do not install Airflow on the host. It runs only in Docker.
 ## One-time: clone and env
 
 ```bash
-git clone https://github.com/Kedar-V/automl-research-lab.git
-cd automl-research-lab
+git clone https://github.com/yihanc09/IDS706-Orchestration.git
+cd IDS706-Orchestration
 ```
 
 ```bash
