@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from ai_jobs_loop.graph import FEATURES, run_loop
@@ -41,6 +42,35 @@ class SalaryLoopTest(unittest.TestCase):
         self.assertNotIn("job_id", FEATURES)
         self.assertEqual(sum(s["node"] == "holdout_reporter" for s in result["steps"]), 1)
         self.assertEqual(early_stop["cycles"], 1)
+
+    def test_planner_changes_second_model_with_validation_feedback(self):
+        rows = []
+        for index in range(120):
+            years = index % 12
+            rows.append({
+                "job_id": f"JOB{index:04d}",
+                "annual_salary_usd": 90000 + years * 9500,
+                "years_of_experience": years,
+                "demand_score": 50 + index % 40,
+                "is_llm_role": index % 2,
+                "skill_count": 3 + index % 6,
+                "has_python": index % 3 == 0,
+                "job_category": "Engineering" if index % 2 else "Research",
+                "remote_work": "Remote" if index % 3 else "On-site",
+            })
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "cleaned.csv"
+            strong_signal = pd.DataFrame(rows)
+            strong_signal.to_csv(path, index=False)
+            strong_result = run_loop(path, max_cycles=2, target_mae=1)
+
+            weak_signal = strong_signal.copy()
+            weak_signal["annual_salary_usd"] = 100000 + np.random.default_rng(42).normal(0, 20000, len(rows))
+            weak_signal.to_csv(path, index=False)
+            weak_result = run_loop(path, max_cycles=2, target_mae=1)
+
+        self.assertEqual([t["family"] for t in strong_result["history"]], ["ridge", "extra_trees"])
+        self.assertEqual([t["family"] for t in weak_result["history"]], ["ridge", "random_forest"])
 
 
 if __name__ == "__main__":

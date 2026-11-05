@@ -30,6 +30,7 @@ NUMERIC = ["years_of_experience", "demand_score", "is_llm_role", "skill_count", 
 CATEGORICAL = ["job_category", "remote_work"]
 FEATURES = NUMERIC + CATEGORICAL
 FAMILIES = ("ridge", "random_forest", "extra_trees")
+MEAN_BASELINE_GAIN_THRESHOLD = 0.10
 DEFAULT_DATASET = Path(__file__).resolve().parents[1] / "datasets/ai_jobs/ai_jobs_clean_latest.csv"
 
 
@@ -123,7 +124,18 @@ def experiment_planner(state: SalaryState) -> dict:
     remaining = [family for family in FAMILIES if family not in tried]
     if not remaining:
         raise ValueError("No untried model family remains")
-    family = remaining[0]
+    if not history:
+        family = "ridge"
+        reason = "Start with a regularized linear model"
+    elif len(remaining) == 2 and history[0]["family"] == "ridge":
+        ridge = history[0]
+        baseline_mae = ridge["validation_baseline_mae"]
+        gain = (baseline_mae - ridge["validation"]["mae"]) / baseline_mae if baseline_mae > 0 else 0.0
+        family = "random_forest" if gain < MEAN_BASELINE_GAIN_THRESHOLD else "extra_trees"
+        reason = f"Ridge improved on the validation mean baseline by {gain:.1%}"
+    else:
+        family = remaining[0]
+        reason = "Try the remaining model after reviewing validation results"
     used_llm = False
     # Optional LLM choice is constrained to untried families; experiments still
     # run without an API key and the judge always uses measured error.
@@ -140,8 +152,9 @@ def experiment_planner(state: SalaryState) -> dict:
         if candidate in remaining:
             family = candidate
             used_llm = True
-    plan = {"family": family, "trial_number": len(history) + 1}
-    return {"plan": plan, "steps": [{"node": "experiment_planner", "note": f"Try {family} next", "plan": plan, "used_llm": used_llm}]}
+            reason = "OpenRouter selected this model from the untried families"
+    plan = {"family": family, "trial_number": len(history) + 1, "reason": reason}
+    return {"plan": plan, "steps": [{"node": "experiment_planner", "note": f"Try {family} next: {reason}", "plan": plan, "used_llm": used_llm}]}
 
 
 def model_trainer(state: SalaryState) -> dict:
@@ -153,7 +166,10 @@ def model_trainer(state: SalaryState) -> dict:
     model = _model(family, seed)
     model.fit(df.iloc[train][FEATURES], df.iloc[train][TARGET])
     metrics = _metrics(df.iloc[validation][TARGET], model.predict(df.iloc[validation][FEATURES]))
-    trial = {"family": family, "validation": metrics}
+    baseline = DummyRegressor(strategy="mean")
+    baseline.fit(df.iloc[train][FEATURES], df.iloc[train][TARGET])
+    baseline_mae = float(mean_absolute_error(df.iloc[validation][TARGET], baseline.predict(df.iloc[validation][FEATURES])))
+    trial = {"family": family, "validation": metrics, "validation_baseline_mae": round(baseline_mae, 2)}
     patch = {
         "trial": trial,
         "cycle": int(state.get("cycle", 0)) + 1,
