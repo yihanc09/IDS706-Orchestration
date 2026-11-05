@@ -47,3 +47,4 @@ mini_loop/**/__pycache__/
 # Airflow publish (runtime)
 datasets/airflow/merged_latest.csv
 datasets/airflow/latest_handoff.json
+datasets/ai_jobs/ai_jobs_clean_latest.csv
